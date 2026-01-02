@@ -105,7 +105,7 @@ export class TodoService {
 
   async remove(todoId: string, userId: string) {
     try {
-      return await this.prisma.todo.delete({
+      await this.prisma.todo.delete({
         where: {
           id_userId: {
             id: todoId,
@@ -113,6 +113,9 @@ export class TodoService {
           },
         },
       });
+      return {
+        message: 'Berhasil menghapus Todo',
+      };
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {

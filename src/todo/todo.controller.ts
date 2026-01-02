@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -18,11 +20,13 @@ import { TodoService } from './todo.service';
 export class TodoController {
   constructor(private readonly todoService: TodoService) {}
 
+  @HttpCode(HttpStatus.CREATED)
   @Post()
   create(@Body() createTodoDto: CreateTodoDto) {
     return this.todoService.create(createTodoDto);
   }
 
+  @HttpCode(HttpStatus.OK)
   @Get('/:userId')
   findTodoByUserId(
     @Param('userId', new ParseUUIDPipe()) userId: string,
@@ -31,6 +35,7 @@ export class TodoController {
     return this.todoService.findTodoByUserId(userId, query);
   }
 
+  @HttpCode(HttpStatus.OK)
   @Patch('/:todoId/user/:userId')
   update(
     @Param('todoId', new ParseUUIDPipe()) todoId: string,
@@ -40,7 +45,8 @@ export class TodoController {
     return this.todoService.update(todoId, userId, updateTodoDto);
   }
 
-  @Delete('/:todoId/user/userId')
+  @HttpCode(HttpStatus.OK)
+  @Delete('/:todoId/user/:userId')
   remove(
     @Param('todoId', new ParseUUIDPipe()) todoId: string,
     @Param('userId', new ParseUUIDPipe()) userId: string,

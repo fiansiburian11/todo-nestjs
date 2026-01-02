@@ -27,11 +27,17 @@ export class UserService {
   }
 
   findAll() {
-    return this.prisma.user.findMany();
+    return this.prisma.user.findMany({
+      select: { id: true, name: true, createdAt: true, updatedAt: true },
+    });
   }
 
   async findOne(id: string) {
-    const user = await this.prisma.user.findUnique({ where: { id } });
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      //car pilih data apa saja yang akan dikembalikan
+      select: { id: true, name: true, createdAt: true, updatedAt: true },
+    });
     if (!user)
       throw new NotFoundException(`User dengan id ${id} tidak ditemukan`);
     return user;
