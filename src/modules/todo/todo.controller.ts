@@ -11,6 +11,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { ApiCreatedResponse } from '@nestjs/swagger';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { QueryTodoDto } from './dto/query-todo.dto';
 import { UpdateTodoDto } from './dto/update-todo.dto';
@@ -20,6 +21,16 @@ import { TodoService } from './todo.service';
 export class TodoController {
   constructor(private readonly todoService: TodoService) {}
 
+  //response di swagger
+  @ApiCreatedResponse({
+    description: 'User berhasil dibuat',
+    example: {
+      id: 'uuid',
+      name: 'example',
+      email: 'example@mail.com',
+      createdAt: '2026-01-01T10:00:00.000Z',
+    },
+  })
   @HttpCode(HttpStatus.CREATED)
   @Post()
   create(@Body() createTodoDto: CreateTodoDto) {
