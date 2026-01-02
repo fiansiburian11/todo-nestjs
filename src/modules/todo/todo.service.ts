@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from 'src/common/prisma/prisma.service';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { QueryTodoDto } from './dto/query-todo.dto';
 import { UpdateTodoDto } from './dto/update-todo.dto';
