@@ -80,12 +80,7 @@ export class TodoService {
   async update(todoId: string, userId: string, updateTodoDto: UpdateTodoDto) {
     try {
       return await this.prisma.todo.update({
-        where: {
-          id_userId: {
-            id: todoId,
-            userId: userId,
-          },
-        },
+        where: { id: todoId, userId: userId },
         data: updateTodoDto,
       });
     } catch (error) {
@@ -107,10 +102,8 @@ export class TodoService {
     try {
       await this.prisma.todo.delete({
         where: {
-          id_userId: {
-            id: todoId,
-            userId: userId,
-          },
+          id: todoId,
+          userId: userId,
         },
       });
       return {

@@ -1,23 +1,87 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { Prisma } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
+import { PrismaService } from 'src/common/prisma/prisma.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
-
+import { RequestLoginDto } from './dto/login-request.dto';
+import { RegisterResponse } from './dto/register-response.dto';
 @Injectable()
 export class AuthService {
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
+  constructor(
+    private prisma: PrismaService,
+    private jwtService: JwtService,
+  ) {}
+
+  async register(createAuthDto: CreateAuthDto): Promise<RegisterResponse> {
+    const SALT_ROUNDS = 10;
+    const hashed = await bcrypt.hash(createAuthDto.password, SALT_ROUNDS);
+
+    try {
+      const user = await this.prisma.user.create({
+        data: {
+          username: createAuthDto.username,
+          email: createAuthDto.email,
+          password: hashed,
+        },
+        select: { id: true, username: true, email: true },
+      });
+
+      return user;
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        const existing = await this.prisma.user.findFirst({
+          where: {
+            OR: [
+              {
+                username: createAuthDto.username,
+              },
+              {
+                email: createAuthDto.email,
+              },
+            ],
+          },
+        });
+        if (existing) {
+          const used: string[] = [];
+          if (existing.username === createAuthDto.username)
+            used.push('username');
+          if (existing.email === createAuthDto.email) used.push('email');
+
+          throw new ConflictException(`${used.join(', ')} sudah digunakan`);
+        }
+        throw new ConflictException(`username atau email sudah digunakan`);
+      }
+      throw error;
+    }
   }
 
-  findAll() {
-    return `This action returns all auth`;
-  }
+  async login(requestLoginDto: RequestLoginDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { email: requestLoginDto.email },
+    });
+    if (!user) {
+      throw new UnauthorizedException('Email atau Password salah');
+    }
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
+    const match = await bcrypt.compare(requestLoginDto.password, user.password);
+    if (!match) {
+      throw new UnauthorizedException('Email atau Password salah');
+    }
 
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
+    const token = await this.jwtService.signAsync({
+      sub: user.id,
+      email: user.email,
+    });
+
+    return token;
   }
 
   remove(id: number) {
