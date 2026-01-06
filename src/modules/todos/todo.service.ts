@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  HttpException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -9,7 +10,6 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/common/prisma/prisma.service';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { QueryTodoDto } from './dto/query-todo.dto';
-import { UpdateAuthDto } from '../auth/dto/update-auth.dto';
 import { UpdateTodoDto } from './dto/update-todo.dto';
 
 @Injectable()
@@ -83,28 +83,19 @@ export class TodoService {
     };
   }
 
-  async updateTodo(
-    userId: string,
-    todoId: string,
-    dto: UpdateTodoDto,
-  ) {
+  async updateTodo(userId: string, todoId: string, dto: UpdateTodoDto) {
+    const hasUpdate =
+      dto.title !== undefined ||
+      dto.status !== undefined ||
+      dto.description !== undefined;
+
+    if (!hasUpdate) {
+      throw new BadRequestException('Tidak ada data yang diupdate');
+    }
+
     try {
-      // 1. Pastikan ada field yang diupdate
-      const hasUpdate =
-        dto.title !== undefined ||
-        dto.status !== undefined ||
-        dto.description !== undefined;
-
-      if (!hasUpdate) {
-        throw new BadRequestException('Tidak ada data yang diupdate');
-      }
-
-      // 2. Update + ownership check
-      const updated = await this.prisma.todo.updateMany({
-        where: {
-          id: todoId,
-          userId,
-        },
+      const result = await this.prisma.todo.updateMany({
+        where: { id: todoId, userId },
         data: {
           ...(dto.title !== undefined ? { title: dto.title } : {}),
           ...(dto.status !== undefined ? { status: dto.status } : {}),
@@ -114,33 +105,57 @@ export class TodoService {
         },
       });
 
-      // 3. Tidak ditemukan atau bukan miliknya
-      if (updated.count === 0) {
+      if (result.count === 0) {
         throw new NotFoundException(
           'Todo tidak ditemukan atau bukan milik anda',
         );
       }
 
-      // 4. Ambil data terbaru (opsional tapi rapi)
-      return this.prisma.todo.findUnique({
-        where: { id: todoId },
+      const todo = await this.prisma.todo.findFirst({
+        where: { id: todoId, userId },
       });
+
+      if (!todo)
+        throw new NotFoundException(
+          'Todo tidak ditemukan atau bukan milik anda',
+        );
+      return todo;
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        // unique constraint (misal title unique per user)
-        if (error.code === 'P2002') {
+        if (error.code === 'P2002')
           throw new BadRequestException('Title sudah digunakan');
-        }
       }
-
-      if (error instanceof BadRequestException) throw error;
-      if (error instanceof NotFoundException) throw error;
-
+      if (error instanceof Prisma.PrismaClientValidationError) {
+        throw new BadRequestException(error.message);
+      }
+      if (error instanceof HttpException) throw error;
       throw new InternalServerErrorException('Gagal mengupdate todo');
     }
   }
 
-  async deleteTodo() {
-    return;
+  async deleteTodo(userId: string, todoId: string) {
+    try {
+      const result = await this.prisma.todo.deleteMany({
+        where: {
+          id: todoId,
+          userId,
+        },
+      });
+
+      // Tidak ditemukan / bukan milik user
+      if (result.count === 0) {
+        throw new NotFoundException(
+          'Todo tidak ditemukan atau bukan milik anda',
+        );
+      }
+
+      return {
+        message: 'Todo berhasil dihapus',
+      };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+
+      throw new InternalServerErrorException('Gagal menghapus todo');
+    }
   }
 }

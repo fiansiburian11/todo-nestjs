@@ -43,22 +43,28 @@ export class TodoController {
     return this.todoService.create(userId, createTodoDto);
   }
 
+  @HttpCode(HttpStatus.OK)
   @Get()
   getTodo(@Req() req: Request, @Query() query: QueryTodoDto) {
     const userId = (req.user as JwtPayload).sub;
     return this.todoService.getTodo(userId, query);
   }
 
-  @Patch('/:id')
+  @HttpCode(HttpStatus.OK)
+  @Patch('/:todoId')
   updateTodo(
     @Req() req: Request,
-    @Param() id: string,
+    @Param('todoId') todoId: string,
     @Body() updateTodoDto: UpdateTodoDto,
   ) {
     const userId = (req.user as JwtPayload).sub;
-    return this.todoService.updateTodo(userId, id, updateTodoDto);
+    return this.todoService.updateTodo(userId, todoId, updateTodoDto);
   }
 
-  @Delete()
-  deleteTodo() {}
+  @HttpCode(HttpStatus.OK)
+  @Delete('/:todoId')
+  deleteTodo(@Req() req: Request, @Param('todoId') todoId: string) {
+    const userId = (req.user as JwtPayload).sub;
+    return this.todoService.deleteTodo(userId, todoId);
+  }
 }
