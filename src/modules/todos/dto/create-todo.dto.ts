@@ -5,7 +5,6 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  IsUUID,
   MaxLength,
 } from 'class-validator';
 
@@ -33,8 +32,4 @@ export class CreateTodoDto {
   @IsEnum(TodoStatus)
   @IsOptional()
   status?: TodoStatus;
-
-  @IsUUID()
-  @IsNotEmpty()
-  userId: string;
 }

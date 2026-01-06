@@ -11,6 +11,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         (req: Request) => cookieJwtExtractor(req),
+        
       ]),
 
       secretOrKey: config.getOrThrow<string>('jwt.secret'),
@@ -20,7 +21,8 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
   async validate(payload: any) {
     // payload ini nanti masuk ke req.user
-    // console.log(this.config.getOrThrow<string>('jwt.secret'),)
+    // console.log(this.config.getOrThrow<string>('jwt.secret'))
+    // console.log(payload)
     if (!payload?.sub) throw new UnauthorizedException('Token tidak valid');
     return payload;
   }

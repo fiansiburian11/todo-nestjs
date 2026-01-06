@@ -6,14 +6,16 @@ import {
   HttpCode,
   HttpStatus,
   Param,
-  ParseUUIDPipe,
   Patch,
   Post,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ApiCreatedResponse } from '@nestjs/swagger';
+import { Request } from 'express';
 import { JwtAuthGuard } from '../../common/guards/jwt.guard';
+import { JwtPayload } from '../auth/jwt-cookie/jwt-payload.type';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { QueryTodoDto } from './dto/query-todo.dto';
 import { UpdateTodoDto } from './dto/update-todo.dto';
@@ -36,40 +38,27 @@ export class TodoController {
   })
   @HttpCode(HttpStatus.CREATED)
   @Post()
-  create(@Body() createTodoDto: CreateTodoDto) {
-    return this.todoService.create(createTodoDto);
+  create(@Req() req: Request, @Body() createTodoDto: CreateTodoDto) {
+    const userId = (req.user as JwtPayload).sub;
+    return this.todoService.create(userId, createTodoDto);
   }
 
-  @Get('/test')
-  getTest() {
-    return { message: 'test' };
+  @Get()
+  getTodo(@Req() req: Request, @Query() query: QueryTodoDto) {
+    const userId = (req.user as JwtPayload).sub;
+    return this.todoService.getTodo(userId, query);
   }
 
-  @HttpCode(HttpStatus.OK)
-  @Get('/:userId')
-  findTodoByUserId(
-    @Param('userId', new ParseUUIDPipe()) userId: string,
-    @Query() query: QueryTodoDto,
-  ) {
-    return this.todoService.findTodoByUserId(userId, query);
-  }
-
-  @HttpCode(HttpStatus.OK)
-  @Patch('/:todoId/user/:userId')
-  update(
-    @Param('todoId', new ParseUUIDPipe()) todoId: string,
-    @Param('userId', new ParseUUIDPipe()) userId: string,
+  @Patch('/:id')
+  updateTodo(
+    @Req() req: Request,
+    @Param() id: string,
     @Body() updateTodoDto: UpdateTodoDto,
   ) {
-    return this.todoService.update(todoId, userId, updateTodoDto);
+    const userId = (req.user as JwtPayload).sub;
+    return this.todoService.updateTodo(userId, id, updateTodoDto);
   }
 
-  @HttpCode(HttpStatus.OK)
-  @Delete('/:todoId/user/:userId')
-  remove(
-    @Param('todoId', new ParseUUIDPipe()) todoId: string,
-    @Param('userId', new ParseUUIDPipe()) userId: string,
-  ) {
-    return this.todoService.remove(todoId, userId);
-  }
+  @Delete()
+  deleteTodo() {}
 }

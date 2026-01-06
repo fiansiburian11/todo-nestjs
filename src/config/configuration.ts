@@ -16,7 +16,7 @@ export default () => ({
 
   jwt: {
     secret: process.env.JWT_SECRET,
-    expiresIn: process.env.JWT_EXPIRES_IN || '1d',
+    expiresIn: parseInt(process.env.JWT_EXPIRES_IN ?? '1800', 10), 
   },
 
   cloudinary: {

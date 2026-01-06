@@ -39,7 +39,7 @@ export class AuthController {
       secure: isProd, // production wajib true (HTTPS)
       sameSite: isProd ? 'none' : 'lax', // aman untuk mayoritas kasus
       domain: isProd ? this.config.getOrThrow('app.cookie_domain') : undefined,
-      maxAge: 30 * 60 * 60 * 1000, // 1 hari
+      maxAge: 30 * 60 * 1000, 
       path: '/', // cookie berlaku untuk semua route
     });
 

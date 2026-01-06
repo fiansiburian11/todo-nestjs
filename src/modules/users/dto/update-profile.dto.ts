@@ -34,10 +34,4 @@ export class UpdateProfileDto {
   @MinLength(8)
   @MaxLength(72)
   password?: string;
-
-  // @IsOptional()
-  // @Transform(trimOrUndef)
-  // @IsString()
-  // @Matches(/^https?:\/\/.+/i, { message: 'image harus berupa URL' })
-  // image?: string;
 }
