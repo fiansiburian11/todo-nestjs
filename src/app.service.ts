@@ -6,7 +6,7 @@ export class AppService {
   getApiReady() {
     return {
       message: 'API READY!',
-      documentation: `http://localhost:5000/api/v1/docs`,
+      documentation: `/api/v1/docs`,
       version: 'v1',
     };
   }

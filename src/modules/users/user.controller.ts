@@ -16,7 +16,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
 import { extname } from 'path';
-import { JwtAuthGuard } from '../../common/guards/jwt.guard';
+import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
 import { JwtPayload } from '../auth/jwt-cookie/jwt-payload.type';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UserService } from './user.service';
@@ -27,7 +27,6 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
   @Get('/me')
   Me(@Req() req: Request) {
     const userId = (req.user as JwtPayload).sub;

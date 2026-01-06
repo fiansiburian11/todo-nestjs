@@ -4,9 +4,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { PrismaModule } from 'src/common/prisma/prisma.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-// pnpm add ms
-// pnpm add -D @types/ms
-import type { StringValue } from 'ms';
 import { JwtStrategy } from './jwt-cookie/jwt.strategy';
 
 @Module({
@@ -17,7 +14,7 @@ import { JwtStrategy } from './jwt-cookie/jwt.strategy';
       useFactory: (config: ConfigService) => ({
         secret: config.getOrThrow('jwt.secret'),
         signOptions: {
-          expiresIn: config.getOrThrow('jwt.expiresIn') as StringValue,
+          expiresIn: config.getOrThrow('jwt.expiresIn'),
         },
       }),
     }),
