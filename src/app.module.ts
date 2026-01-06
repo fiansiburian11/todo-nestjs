@@ -8,8 +8,8 @@ import { PrismaModule } from './common/prisma/prisma.module';
 import { PrismaService } from './common/prisma/prisma.service';
 import configuration from './config/configuration';
 import { AuthModule } from './modules/auth/auth.module';
-import { TodoModule } from './modules/todo/todo.module';
-import { UserModule } from './modules/user/user.module';
+import { TodoModule } from './modules/todos/todo.module';
+import { UserModule } from './modules/users/user.module';
 
 @Module({
   imports: [
