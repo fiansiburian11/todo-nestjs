@@ -51,6 +51,13 @@ export class TodoController {
   }
 
   @HttpCode(HttpStatus.OK)
+  @Get('/:todoId')
+  getTodoById(@Req() req: Request, @Param('todoId') todoId: string) {
+    const userId = (req.user as JwtPayload).sub;
+    return this.todoService.getTodoById(userId, todoId);
+  }
+
+  @HttpCode(HttpStatus.OK)
   @Patch('/:todoId')
   updateTodo(
     @Req() req: Request,

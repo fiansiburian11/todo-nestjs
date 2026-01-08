@@ -82,6 +82,28 @@ export class TodoService {
     };
   }
 
+  async getTodoById(userId: string, todoId: string) {
+    try {
+      const todo = await this.prisma.todo.findFirst({
+        where: {
+          id: todoId,
+          userId,
+        },
+      });
+
+      if (!todo) {
+        throw new NotFoundException(
+          'Todo tidak ditemukan atau bukan milik anda',
+        );
+      }
+
+      return todo;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      throw new InternalServerErrorException('Gagal mengambil todo');
+    }
+  }
+
   async updateTodo(userId: string, todoId: string, dto: UpdateTodoDto) {
     const hasUpdate =
       dto.title !== undefined ||
